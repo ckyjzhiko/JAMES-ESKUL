@@ -1,2 +1,382 @@
 # JAMES-ESKUL
 WEB
+  <!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Happy Iwan Store — Blue Shop</title>
+  <style>
+    :root{
+      --primary:#0b74ff;
+      --muted:#f4f7fb;
+      --card:#ffffff;
+      --text:#111;
+      --accent:#0b74ff;
+    }
+    *{box-sizing:border-box;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    body{margin:0;background:var(--muted);color:var(--text);-webkit-font-smoothing:antialiased}
+    header{background:var(--card);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(10,20,40,0.06);position:sticky;top:0;z-index:40}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#cfe9ff,#0b74ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+    .brand h1{font-size:18px;margin:0;color:var(--primary)}
+    .container{max-width:1100px;margin:22px auto;padding:0 18px}
+    .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    .search{flex:1;min-width:200px}
+    input.searchbox{width:100%;padding:10px 12px;border-radius:8px;border:1px solid #dfe9f7;background:#fff}
+    select{padding:10px;border-radius:8px;border:1px solid #dfe9f7;background:#fff}
+    .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+    .card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 4px 18px rgba(10,20,40,0.06);display:flex;flex-direction:column;gap:8px}
+    .thumb{height:160px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#eef6ff}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .title{font-weight:700;font-size:15px}
+    .cat{font-size:12px;color:#666}
+    .price{font-weight:800;color:var(--primary);margin-top:auto}
+    .actions{display:flex;gap:8px;margin-top:8px}
+    button{cursor:pointer;border:0;padding:10px 12px;border-radius:8px;font-weight:700}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-outline{background:transparent;border:1px solid var(--primary);color:var(--primary)}
+    .floating-wa{position:fixed;right:18px;bottom:18px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;padding:12px 14px;border-radius:999px;display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(12,90,80,0.18);z-index:60}
+    .cart-btn{background:transparent;border:1px solid rgba(10,20,40,0.06);padding:8px 10px;border-radius:8px}
+    /* Checkout full page */
+    .checkout-wrapper{display:none;min-height:80vh;padding:22px 18px}
+    .checkout-card{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .order-list{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 4px 16px rgba(10,20,40,0.05)}
+    .order-item{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px dashed #eef4fb}
+    .order-item img{width:64px;height:64px;border-radius:8px;object-fit:cover}
+    .order-right{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 4px 16px rgba(10,20,40,0.05);height:fit-content}
+    .form-group{margin-bottom:10px}
+    input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #e0e8f8;font-family:inherit}
+    .small{font-size:13px;color:#666}
+    .muted{color:#777;font-size:13px}
+    footer{padding:18px;text-align:center;color:#888;margin-top:28px}
+    @media(max-width:900px){
+      .checkout-card{grid-template-columns:1fr}
+      .order-right{position:sticky;bottom:0}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">HI</div>
+      <div>
+        <h1>Happy Iwan Store</h1>
+        <div class="small muted">Belanja mudah — kirim lewat WhatsApp</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <div class="muted">Nomor WA: <strong>082179466299</strong></div>
+      <button class="btn-outline" id="goToCart">Keranjang (<span id="cartCount">0</span>)</button>
+    </div>
+  </header>
+
+  <div class="container" id="shopPage">
+    <div class="toolbar">
+      <div style="min-width:180px">
+        <select id="filterCategory">
+          <option value="all">Semua Kategori</option>
+          <option value="pakaian">Pakaian</option>
+          <option value="aksesori">Aksesoris</option>
+          <option value="sepatu">Sepatu</option>
+        </select>
+      </div>
+
+      <div class="search">
+        <input class="searchbox" id="search" placeholder="Cari produk...">
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button class="btn-primary" id="clearFilter">Reset</button>
+      </div>
+    </div>
+
+    <div class="products" id="productGrid"></div>
+  </div>
+
+  <!-- Checkout full page -->
+  <div class="checkout-wrapper" id="checkoutPage">
+    <div class="container">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h2>Checkout — Happy Iwan Store</h2>
+        <div>
+          <button class="btn-outline" id="backToShop">Kembali Belanja</button>
+        </div>
+      </div>
+
+      <div class="checkout-card">
+        <div>
+          <div class="order-list" id="orderList">
+            <!-- order items -->
+            <div class="muted small">Produk yang akan dipesan</div>
+            <div id="orderItems"></div>
+          </div>
+
+          <div style="margin-top:12px;background:var(--card);padding:12px;border-radius:10px;box-shadow:0 4px 16px rgba(10,20,40,0.05)">
+            <div class="form-group">
+              <label>Nama Penerima</label>
+              <input id="inputNama" placeholder="Nama lengkap">
+            </div>
+            <div class="form-group">
+              <label>Nomor HP</label>
+              <input id="inputHP" placeholder="0821xxxx">
+            </div>
+            <div class="form-group">
+              <label>Alamat Lengkap</label>
+              <textarea id="inputAlamat" rows="3" placeholder="Alamat, kecamatan, kota, kode pos"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Catatan Pesanan (opsional)</label>
+              <textarea id="inputCatatan" rows="2" placeholder="Misal: antar jam 5 sore"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-right">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="small muted">Subtotal</div><div id="subtotText">Rp0</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="small muted">Estimasi Ongkir</div><div id="ongkirText">Rp15.000</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:16px;margin-bottom:12px">
+            <div>Total</div><div id="totalText">Rp0</div>
+          </div>
+
+          <div style="margin-bottom:10px">
+            <div class="small muted">Metode Pembayaran</div>
+            <div style="margin-top:6px">COD / Transfer (konfirmasi via WhatsApp)</div>
+          </div>
+
+          <button class="btn-primary" style="width:100%;padding:12px;font-size:15px" id="placeOrderBtn">
+            Buat Pesanan via WhatsApp
+          </button>
+
+          <div style="margin-top:10px">
+            <button class="cart-btn" style="width:100%" id="clearCartBtn">Kosongkan Keranjang</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="floating-wa" id="waBubble" title="Chat via WhatsApp">
+    <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M20.52 3.48A11 11 0 1 0 3.48 20.52L2 22l1.48-.52A11 11 0 0 0 20.52 3.48zM12 19.5c-1.2 0-2.4-.3-3.4-.8L6 19l1.3-2.6c-.4-.8-.6-1.8-.6-2.8 0-4.1 3.4-7.5 7.5-7.5S19.5 7.9 19.5 12 16.1 19.5 12 19.5z" /></svg>
+    <div style="font-weight:700">Chat WA</div>
+  </div>
+
+  <footer>© 2025 Happy Iwan Store — Buat pesanan lewat WhatsApp</footer>
+
+  <script>
+    /***** DATA PRODUK (gambar bebas dari Unsplash) *****/
+    const products = [
+      {id:1, title:'Kaos Polos Biru', price:75000, img:'https://source.unsplash.com/featured/?tshirt,blue', category:'pakaian'},
+      {id:2, title:'Topi Baseball', price:65000, img:'https://source.unsplash.com/featured/?cap', category:'aksesori'},
+      {id:3, title:'Hoodie Navy', price:175000, img:'https://source.unsplash.com/featured/?hoodie', category:'pakaian'},
+      {id:4, title:'Totebag Canvas', price:85000, img:'https://source.unsplash.com/featured/?totebag', category:'aksesori'},
+      {id:5, title:'Kacamata Hitam', price:95000, img:'https://source.unsplash.com/featured/?sunglasses', category:'aksesori'},
+      {id:6, title:'Sepatu Sport', price:225000, img:'https://source.unsplash.com/featured/?sneakers', category:'sepatu'},
+      {id:7, title:'Jam Tangan Casual', price:185000, img:'https://source.unsplash.com/featured/?watch', category:'aksesori'},
+      {id:8, title:'Kaos Polo', price:90000, img:'https://source.unsplash.com/featured/?polo-shirt', category:'pakaian'},
+      {id:9, title:'Tas Ransel', price:210000, img:'https://source.unsplash.com/featured/?backpack', category:'aksesori'},
+      {id:10, title:'Sepatu Slip-on', price:150000, img:'https://source.unsplash.com/featured/?slipon,shoes', category:'sepatu'}
+    ];
+
+    // WA number (international without leading 0)
+    const waRaw = '082179466299';
+    const waIntl = waRaw.replace(/^0+/,''); // '82179466299'
+    const waNumber = waIntl.startsWith('62') ? waIntl : '62'+waIntl; // '6282179466299'
+
+    // State
+    const cart = {}; // {productId: qty}
+    const productGrid = document.getElementById('productGrid');
+    const cartCountEl = document.getElementById('cartCount');
+    const filterEl = document.getElementById('filterCategory');
+    const searchEl = document.getElementById('search');
+
+    // Render product cards
+    function renderProducts(list = products){
+      productGrid.innerHTML = '';
+      list.forEach(p=>{
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="thumb"><img src="${p.img}" alt="${escapeHtml(p.title)}" loading="lazy"></div>
+          <div class="title">${escapeHtml(p.title)}</div>
+          <div class="cat">${capitalize(p.category)}</div>
+          <div class="price">${formatRp(p.price)}</div>
+          <div class="actions">
+            <button class="btn-primary" onclick="addToCart(${p.id})">Tambah</button>
+            <button class="btn-outline" onclick="quickBuy(${p.id})">Beli</button>
+          </div>
+        `;
+        productGrid.appendChild(card);
+      });
+    }
+
+    // Helpers
+    function formatRp(n){ return 'Rp' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+    function escapeHtml(str){ return String(str).replace(/[&<>"']/g, (m)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+
+    // Cart functions
+    function addToCart(id){
+      cart[id] = (cart[id]||0) + 1;
+      updateCartUI();
+      toast('Produk ditambahkan ke keranjang');
+    }
+    function quickBuy(id){
+      cart[id] = (cart[id]||0) + 1;
+      updateCartUI();
+      goToCheckout();
+    }
+    function updateCartUI(){
+      let totalQty = 0;
+      Object.values(cart).forEach(q=> totalQty += q);
+      cartCountEl.textContent = totalQty;
+    }
+    function clearCart(){
+      for(const k in cart) delete cart[k];
+      updateCartUI();
+    }
+
+    // Filtering & search
+    filterEl.addEventListener('change', applyFilterSearch);
+    searchEl.addEventListener('input', ()=>{ applyFilterSearch(); });
+
+    function applyFilterSearch(){
+      const cat = filterEl.value;
+      const q = searchEl.value.trim().toLowerCase();
+      let list = products.filter(p => (cat==='all' || p.category===cat));
+      if(q) list = list.filter(p => p.title.toLowerCase().includes(q));
+      renderProducts(list);
+    }
+
+    // Toast simple
+    function toast(msg){
+      const el = document.createElement('div');
+      el.textContent = msg;
+      el.style.position='fixed';
+      el.style.left='50%';
+      el.style.transform='translateX(-50%)';
+      el.style.bottom='24px';
+      el.style.background='rgba(0,0,0,0.8)';
+      el.style.color='white';
+      el.style.padding='10px 14px';
+      el.style.borderRadius='8px';
+      el.style.zIndex=200;
+      document.body.appendChild(el);
+      setTimeout(()=>{ el.style.transition='opacity .3s'; el.style.opacity=0; },1400);
+      setTimeout(()=>el.remove(),1800);
+    }
+
+    /***** CHECKOUT PAGE LOGIC *****/
+    const shopPage = document.getElementById('shopPage');
+    const checkoutPage = document.getElementById('checkoutPage');
+    document.getElementById('goToCart').addEventListener('click', ()=>{
+      if(Object.keys(cart).length===0){ alert('Keranjang kosong — tambahkan produk dulu.'); return; }
+      goToCheckout();
+    });
+    document.getElementById('backToShop').addEventListener('click', ()=>{
+      checkoutPage.style.display = 'none';
+      shopPage.style.display = 'block';
+    });
+    document.getElementById('clearCartBtn').addEventListener('click', ()=>{
+      if(confirm('Kosongkan keranjang?')){ clearCart(); renderOrderItems(); updateCartUI(); checkoutPage.style.display='none'; shopPage.style.display='block'; }
+    });
+
+    function goToCheckout(){
+      shopPage.style.display = 'none';
+      checkoutPage.style.display = 'block';
+      renderOrderItems();
+    }
+
+    function renderOrderItems(){
+      const orderItems = document.getElementById('orderItems');
+      orderItems.innerHTML = '';
+      let subtotal = 0;
+      if(Object.keys(cart).length===0){
+        orderItems.innerHTML = '<div class="muted">Keranjang kosong</div>';
+      } else {
+        Object.keys(cart).forEach(k=>{
+          const p = products.find(x=>x.id==k);
+          const qty = cart[k];
+          const line = document.createElement('div');
+          line.className = 'order-item';
+          line.innerHTML = `
+            <img src="${p.img}" alt="${escapeHtml(p.title)}">
+            <div style="flex:1">
+              <div style="font-weight:700">${escapeHtml(p.title)}</div>
+              <div class="small muted">Qty: ${qty} • ${formatRp(p.price)}</div>
+            </div>
+            <div style="font-weight:700">${formatRp(p.price * qty)}</div>
+          `;
+          orderItems.appendChild(line);
+          subtotal += p.price * qty;
+        });
+      }
+      const ongkir = estimateOngkir(subtotal);
+      document.getElementById('subtotText').textContent = formatRp(subtotal);
+      document.getElementById('ongkirText').textContent = formatRp(ongkir);
+      document.getElementById('totalText').textContent = formatRp(subtotal + ongkir);
+    }
+
+    // Simple ongkir estimator (flat + condition)
+    function estimateOngkir(subtotal){
+      if(subtotal >= 250000) return 0;
+      if(subtotal >= 150000) return 10000;
+      return 15000;
+    }
+
+    // Place order -> WA
+    document.getElementById('placeOrderBtn').addEventListener('click', ()=>{
+      if(Object.keys(cart).length===0){ alert('Keranjang kosong'); return; }
+      const nama = document.getElementById('inputNama').value.trim() || '(Tidak diisi)';
+      const hp = document.getElementById('inputHP').value.trim() || '(Tidak diisi)';
+      const alamat = document.getElementById('inputAlamat').value.trim() || '(Tidak diisi)';
+      const catatan = document.getElementById('inputCatatan').value.trim() || '-';
+
+      // build items text
+      let itemsText = '';
+      let subtotal = 0;
+      Object.keys(cart).forEach(k=>{
+        const p = products.find(x=>x.id==k);
+        const q = cart[k];
+        itemsText += `${p.title} x${q} = ${formatRp(p.price*q)}%0A`;
+        subtotal += p.price * q;
+      });
+      const ongkir = estimateOngkir(subtotal);
+      const total = subtotal + ongkir;
+
+      const message = `Halo, saya ingin memesan dari Happy Iwan Store:%0A%0A${itemsText}%0ASubtotal: ${formatRp(subtotal)}%0AOngkir: ${formatRp(ongkir)}%0ATotal: ${formatRp(total)}%0A%0ANama: ${encodeURIComponent(nama)}%0ANomor HP: ${encodeURIComponent(hp)}%0AAlamat: ${encodeURIComponent(alamat)}%0ACatatan: ${encodeURIComponent(catatan)}`;
+
+      const url = `https://wa.me/${waNumber}?text=${message}`;
+      window.open(url, '_blank');
+    });
+
+    // Floating WA bubble
+    document.getElementById('waBubble').addEventListener('click', ()=>{
+      const url = `https://wa.me/${waNumber}?text=${encodeURIComponent('Halo, saya mau tanya tentang produk Happy Iwan Store')}`;
+      window.open(url, '_blank');
+    });
+
+    // Clear filter
+    document.getElementById('clearFilter').addEventListener('click', ()=>{
+      filterEl.value = 'all';
+      searchEl.value = '';
+      renderProducts();
+    });
+
+    // Init
+    renderProducts();
+    updateCartUI();
+
+    // Expose some functions for inline onclick
+    window.addToCart = addToCart;
+    window.quickBuy = quickBuy;
+    window.goToCheckout = goToCheckout;
+    window.clearCart = clearCart;
+
+  </script>
+</body>
+</html>
